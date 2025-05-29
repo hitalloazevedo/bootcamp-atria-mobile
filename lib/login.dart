@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:teste_flutter/inicio.dart';
 
 
 class registerPage extends StatelessWidget{
@@ -270,33 +269,26 @@ class _LoginPageState extends State<LoginPage> {
             ),
             child: SizedBox.expand(
               child: TextButton(
-                onPressed: () {
-                verifyLogin();
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => InicioPage()),
-                  (Route<dynamic> route) => false,
-                );
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                Text(
-                  "Login",
-                  style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 20,
-                  ),
-                  textAlign: TextAlign.left,
+                onPressed: verifyLogin,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Login",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                    SizedBox(
+                      height: 32,
+                      width: 32,
+                      child: Image.asset("assets/foguete.png"),
+                    ),
+                  ],
                 ),
-                SizedBox(
-                  height: 32,
-                  width: 32,
-                  child: Image.asset("assets/foguete.png"),
-                ),
-                ],
-              ),
               ),
             ),
           ),

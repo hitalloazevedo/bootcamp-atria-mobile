@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:teste_flutter/inicio.dart';
 import 'package:teste_flutter/login.dart';
 
 void main() => runApp(MyApp());
@@ -10,7 +11,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'AtriaJr App',
       theme: ThemeData(primarySwatch: Colors.deepPurple),
-      home: LoginPage(),
+      home: InicioPage(),
     );
   }
 }

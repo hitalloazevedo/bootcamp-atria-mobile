@@ -1,231 +1,344 @@
 import 'package:flutter/material.dart';
 
-const List<Map<String, dynamic>> tarefas = [
-  {
-    "nome": "Estudar Flutter",
-    "dataCriacao": "2024-06-01",
-    "descricao": "Ler a documentação oficial do Flutter.",
-    "status": "Pendente",
-  },
-  {
-    "nome": "Revisar Dart",
-    "dataCriacao": "2024-06-02",
-    "descricao": "Praticar conceitos básicos e avançados de Dart.",
-    "status": "Em andamento",
-  },
-  {
-    "nome": "Implementar Login",
-    "dataCriacao": "2024-06-03",
-    "descricao": "Criar tela de login para o app.",
-    "status": "Concluído",
-  },
-  {
-    "nome": "Criar Lista de Tarefas",
-    "dataCriacao": "2024-06-04",
-    "descricao": "Desenvolver componente para exibir tarefas.",
-    "status": "Pendente",
-  },
-  {
-    "nome": "Testar Aplicativo",
-    "dataCriacao": "2024-06-05",
-    "descricao": "Executar testes unitários e de integração.",
-    "status": "Pendente",
-  },
-  {
-    "nome": "Ajustar Layout",
-    "dataCriacao": "2024-06-06",
-    "descricao": "Melhorar responsividade das telas.",
-    "status": "Em andamento",
-  },
-  {
-    "nome": "Adicionar Splash Screen",
-    "dataCriacao": "2024-06-07",
-    "descricao": "Criar tela inicial animada.",
-    "status": "Pendente",
-  },
-  {
-    "nome": "Configurar Navegação",
-    "dataCriacao": "2024-06-08",
-    "descricao": "Implementar rotas entre páginas.",
-    "status": "Concluído",
-  },
-  {
-    "nome": "Documentar Código",
-    "dataCriacao": "2024-06-09",
-    "descricao": "Adicionar comentários e documentação.",
-    "status": "Pendente",
-  },
-  {
-    "nome": "Publicar no GitHub",
-    "dataCriacao": "2024-06-10",
-    "descricao": "Subir projeto para repositório remoto.",
-    "status": "Pendente",
-  },
-];
+class InicioPage extends StatefulWidget {
+  const InicioPage({super.key});
 
-class InicioPage extends StatelessWidget {
+  @override
+  State<InicioPage> createState() => _InicioPageState();
+}
+
+class _InicioPageState extends State<InicioPage> {
+  final List<Map<String, dynamic>> _tarefas = [
+    {
+      "nome": "Estudar Flutter",
+      "dataCriacao": "2024-06-01",
+      "descricao":
+          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. ",
+      "status": "Pendente",
+    },
+    {
+      "nome": "Revisar Dart",
+      "dataCriacao": "2024-06-02",
+      "descricao": "Praticar conceitos básicos e avançados de Dart.",
+      "status": "Em andamento",
+    },
+    {
+      "nome": "Implementar Login",
+      "dataCriacao": "2024-06-03",
+      "descricao": "Criar tela de login para o app.",
+      "status": "Concluído",
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Minhas Tarefas"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.logout),
-            onPressed: () {
-              // Adicione aqui a lógica de logout se necessário
-            },
-          ),
-        ],
-      ),
-      body: Center(
+      body: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            SizedBox(
-              height: 128,
-              width: 128,
-              child: Image.asset('assets/atria.jpeg'),
+            // Cabeçalho
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  Image.asset(
+                    'assets/atria.jpeg',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Olá [NOME USUÁRIO]",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    "Vamos colocar a sua rotina em dia.",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const Text(
+                    "Altuma tarefa nova?",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 40),
+                  CriadorTarefas(),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
-            SizedBox(height: 20),
-            BotoesCriarEditar(),
-            ListaTarefas(),
+
+            // Lista de tarefas
+            Expanded(
+              child: ListView.builder(
+                itemCount: _tarefas.length,
+                itemBuilder: (context, index) {
+                  final tarefa = _tarefas[index];
+                  return _TarefaItem(
+                    titulo: tarefa['nome'],
+                    descricao: tarefa['descricao'],
+                    data: tarefa['dataCriacao'],
+                    status: tarefa['status'],
+                    onPressed: () {
+                      // Ação ao clicar na tarefa
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-}
 
-final Function criarTarefa = () {
-  print('Função criarTarefa chamada');
-};
-
-class BotoesCriarEditar extends StatelessWidget {
-  const BotoesCriarEditar({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 300,
-      height: 80,
-      child: Row(
-        children: [
-          SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: criarTarefa(),
-            child: const Row(
-              children: [
-                SizedBox(width: 20),
-                Text("Criar"),
-                SizedBox(width: 4),
-                Icon(Icons.add),
-                SizedBox(width: 16),
-              ],
-            ),
-          ),
-          SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: criarTarefa(),
-            child: const Row(
-              children: [
-                SizedBox(width: 20),
-                Text("Editar"),
-                SizedBox(width: 4),
-                Icon(Icons.edit),
-                SizedBox(width: 16),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+  void _adicionarTarefa() {
+    setState(() {
+      _tarefas.add({
+        "nome": "Nova Tarefa ${_tarefas.length + 1}",
+        "dataCriacao": DateTime.now().toString().substring(0, 10),
+        "descricao": "Descrição da nova tarefa",
+        "status": "Pendente",
+      });
+    });
   }
 }
 
-class ListaTarefas extends StatelessWidget {
-  const ListaTarefas({super.key});
+class CriadorTarefas extends StatelessWidget {
+  const CriadorTarefas({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 640, // Defina a altura conforme necessário
-      child: SingleChildScrollView(
-        child: Column(
-          children:
-              tarefas
-                  .map(
-                    (tarefa) => Tarefa(
-                      titulo: tarefa['nome'],
-                      descricao: tarefa['descricao'],
-                      dataCriacao: tarefa['dataCriacao'],
-                      estado: tarefa['status'],
-                    ),
-                  )
-                  .toList(),
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            "DESEJA CRIAR UMA TAREFA?",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class Tarefa extends StatefulWidget {
-  final String titulo;
-  final String descricao;
-  final String dataCriacao;
-  final String estado;
-
-  const Tarefa({
-    super.key,
-    required this.titulo,
-    required this.descricao,
-    required this.dataCriacao,
-    required this.estado,
-  });
-
-  @override
-  State<Tarefa> createState() => _TarefaState();
-}
-
-class _TarefaState extends State<Tarefa> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.purple[100],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      width: MediaQuery.of(context).size.width * 0.75,
-      height: 56,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.purple, width: 1),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
             children: [
-              Icon(Icons.keyboard_arrow_down_rounded),
-              SizedBox(
-                width: 120,
-                child: Text(
-                  widget.titulo,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  textAlign: TextAlign.left,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Nome da Tarefa",
+                    style: TextStyle(color: Colors.purple),
+                  ),
+                  SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.calendar_month,
+                        size: 28,
+                        color: Colors.purple,
+                      ),
+                      SizedBox(width: 5),
+                      SizedBox(
+                        width: 190,
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: "Digite aqui",
+                            border: UnderlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  Text(
+                    "Descrição da Tarefa",
+                    style: TextStyle(color: Colors.purple),
+                  ),
+                  SizedBox(height: 5),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.description_outlined,
+                        size: 28,
+                        color: Colors.purple,
+                      ),
+                      SizedBox(width: 5),
+                      SizedBox(
+                        width: 190,
+                        child: TextField(
+                          decoration: InputDecoration(
+                            hintText: "Digite aqui",
+                            border: UnderlineInputBorder(),
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 0,
+                      ),
+                    ),
+                    child: Text(
+                      "CRIAR TAREFA",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Image.asset(
+                'assets/atria.jpeg',
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
               ),
             ],
           ),
-          SizedBox(
-            width: 100,
-            child: Text(
-              widget.estado,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: TextAlign.right,
+        ),
+      ],
+    );
+  }
+}
+
+class _TarefaItem extends StatelessWidget {
+  final String titulo;
+  final String descricao;
+  final String data;
+  final String status;
+  final VoidCallback onPressed;
+
+  const _TarefaItem({
+    required this.titulo,
+    required this.descricao,
+    required this.data,
+    required this.status,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Colors.purple, width: 1),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Ícone de menu, título e descrição
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: onPressed,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple,
+                          minimumSize: const Size(32, 32),
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.menu,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                      Flexible(
+                        child: Text(
+                          titulo.length > 25
+                              ? '${titulo.substring(0, 25)}...'
+                              : titulo,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      descricao.length > 126
+                          ? '${descricao.substring(0, 126)}...'
+                          : descricao,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 5,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            // Barra vertical separadora
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              width: 2,
+              height: 102,
+              color: Colors.purple,
+            ),
+            // Botões de ação
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Radio<String>(
+                      value: 'Concluído',
+                      groupValue: status,
+                      onChanged: (value) {},
+                      activeColor: Colors.purple,
+                    ),
+                    const Text('Concluído'),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Radio<String>(
+                      value: 'Pendente',
+                      groupValue: status,
+                      onChanged: (value) {},
+                      activeColor: Colors.purple,
+                    ),
+                    const Text('Pendente'),
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
