@@ -45,7 +45,7 @@ class registerPage extends StatelessWidget{
             SizedBox(
               height: 128,
               width: 128,
-              child: Image.asset('assets/atria.jpeg'),
+              child: Image.asset('assets/Logo.png'),
             ),
             SizedBox(
               height: 40,
@@ -201,7 +201,7 @@ class _LoginPageState extends State<LoginPage> {
           SizedBox(
             width: 128,
             height: 128,
-            child: Image.asset("assets/atria.jpeg"),
+            child: Image.asset("assets/Logo.png"),
           ),
           SizedBox(
             height: 10,
