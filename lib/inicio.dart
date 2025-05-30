@@ -14,13 +14,13 @@ class _InicioPageState extends State<InicioPage> {
       "dataCriacao": "2024-06-01",
       "descricao":
           "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. ",
-      "status": "Pendente",
+      "status": "Concluído",
     },
     {
       "nome": "Revisar Dart",
       "dataCriacao": "2024-06-02",
       "descricao": "Praticar conceitos básicos e avançados de Dart.",
-      "status": "Em andamento",
+      "status": "Pendente",
     },
     {
       "nome": "Implementar Login",
@@ -312,29 +312,59 @@ class _TarefaItem extends StatelessWidget {
             // Botões de ação
             Column(
               children: [
-                Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Concluído',
-                      groupValue: status,
-                      onChanged: (value) {},
-                      activeColor: Colors.purple,
-                    ),
-                    const Text('Concluído'),
-                  ],
+              // Opção "Concluído"
+              Container(
+                decoration: BoxDecoration(
+                color: status == 'Concluído' ? Colors.purple : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
                 ),
-                Row(
-                  children: [
-                    Radio<String>(
-                      value: 'Pendente',
-                      groupValue: status,
-                      onChanged: (value) {},
-                      activeColor: Colors.purple,
-                    ),
-                    const Text('Pendente'),
-                  ],
+                child: Row(
+                children: [
+                  Radio<String>(
+                  value: 'Concluído',
+                  groupValue: status,
+                  onChanged: (value) {},
+                  activeColor: Colors.white,
+                  fillColor: MaterialStateProperty.resolveWith<Color>(
+                    (states) => status == 'Concluído' ? Colors.white : Colors.purple,
+                  ),
+                  ),
+                  Text(
+                  'Concluído',
+                  style: TextStyle(
+                    color: status == 'Concluído' ? Colors.white : Colors.black,
+                  ),
+                  ),
+                ],
                 ),
-                const SizedBox(height: 8),
+              ),
+              // Opção "Pendente"
+              Container(
+                decoration: BoxDecoration(
+                color: status == 'Pendente' ? Colors.purple : Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                children: [
+                  Radio<String>(
+                  value: 'Pendente',
+                  groupValue: status,
+                  onChanged: (value) {},
+                  activeColor: Colors.white,
+                  fillColor: MaterialStateProperty.resolveWith<Color>(
+                    (states) => status == 'Pendente' ? Colors.white : Colors.purple,
+                  ),
+                  ),
+                  Text(
+                  'Pendente',
+                  style: TextStyle(
+                    color: status == 'Pendente' ? Colors.white : Colors.black,
+                  ),
+                  ),
+                ],
+                ),
+              ),
+              const SizedBox(height: 8),
               ],
             ),
           ],
