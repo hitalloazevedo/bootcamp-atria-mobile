@@ -34,57 +34,59 @@ class _InicioPageState extends State<InicioPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
+        child: CustomScrollView(
+          slivers: [
             // Cabeçalho
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Image.asset(
-                    'assets/atria.jpeg',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Olá [NOME USUÁRIO]",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    "Vamos colocar a sua rotina em dia.",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const Text(
-                    "Altuma tarefa nova?",
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  const SizedBox(height: 40),
-                  CriadorTarefas(),
-                  const SizedBox(height: 20),
-                ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/Logo.png',
+                      width: 140,
+                      height: 140,
+                      fit: BoxFit.cover,
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Olá [NOME USUÁRIO]",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Vamos colocar a sua rotina em dia.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const Text(
+                      "Altuma tarefa nova?",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    const SizedBox(height: 40),
+                    CriadorTarefas(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
 
             // Lista de tarefas
-            Expanded(
-              child: ListView.builder(
-                itemCount: _tarefas.length,
-                itemBuilder: (context, index) {
-                  final tarefa = _tarefas[index];
-                  return _TarefaItem(
-                    titulo: tarefa['nome'],
-                    descricao: tarefa['descricao'],
-                    data: tarefa['dataCriacao'],
-                    status: tarefa['status'],
-                    onPressed: () {
-                      // Ação ao clicar na tarefa
-                    },
-                  );
-                },
-              ),
+            SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final tarefa = _tarefas[index];
+                return _TarefaItem(
+                  titulo: tarefa['nome'],
+                  descricao: tarefa['descricao'],
+                  data: tarefa['dataCriacao'],
+                  status: tarefa['status'],
+                  onPressed: () {
+                    // Ação ao clicar na tarefa
+                  },
+                );
+              }, childCount: _tarefas.length),
             ),
           ],
         ),
@@ -210,10 +212,11 @@ class CriadorTarefas extends StatelessWidget {
                   ),
                 ],
               ),
+              SizedBox(width: 2.3),
               Image.asset(
-                'assets/atria.jpeg',
-                width: 80,
-                height: 80,
+                'assets/Logo.png',
+                width: 120,
+                height: 120,
                 fit: BoxFit.cover,
               ),
             ],
@@ -292,8 +295,8 @@ class _TarefaItem extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 8.0),
                     child: Text(
-                      descricao.length > 126
-                          ? '${descricao.substring(0, 126)}...'
+                      descricao.length > 90
+                          ? '${descricao.substring(0, 90)}...'
                           : descricao,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 5,
@@ -312,59 +315,79 @@ class _TarefaItem extends StatelessWidget {
             // Botões de ação
             Column(
               children: [
-              // Opção "Concluído"
-              Container(
-                decoration: BoxDecoration(
-                color: status == 'Concluído' ? Colors.purple : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
+                SizedBox(height: 4),
+
+                // Opção "Concluído"
+                Container(
+                  decoration: BoxDecoration(
+                    color:
+                        status == 'Concluído'
+                            ? Colors.purple
+                            : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Concluído',
+                        groupValue: status,
+                        onChanged: (value) {},
+                        activeColor: Colors.white,
+                        fillColor: MaterialStateProperty.resolveWith<Color>(
+                          (states) =>
+                              status == 'Concluído'
+                                  ? Colors.white
+                                  : Colors.purple,
+                        ),
+                      ),
+                      Text(
+                        'Concluído',
+                        style: TextStyle(
+                          color:
+                              status == 'Concluído'
+                                  ? Colors.white
+                                  : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                children: [
-                  Radio<String>(
-                  value: 'Concluído',
-                  groupValue: status,
-                  onChanged: (value) {},
-                  activeColor: Colors.white,
-                  fillColor: MaterialStateProperty.resolveWith<Color>(
-                    (states) => status == 'Concluído' ? Colors.white : Colors.purple,
+                // Opção "Pendente"
+                Container(
+                  decoration: BoxDecoration(
+                    color:
+                        status == 'Pendente'
+                            ? Colors.purple
+                            : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                   ),
+                  child: Row(
+                    children: [
+                      Radio<String>(
+                        value: 'Pendente',
+                        groupValue: status,
+                        onChanged: (value) {},
+                        activeColor: Colors.white,
+                        fillColor: MaterialStateProperty.resolveWith<Color>(
+                          (states) =>
+                              status == 'Pendente'
+                                  ? Colors.white
+                                  : Colors.purple,
+                        ),
+                      ),
+                      Text(
+                        'Pendente',
+                        style: TextStyle(
+                          color:
+                              status == 'Pendente'
+                                  ? Colors.white
+                                  : Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
-                  Text(
-                  'Concluído',
-                  style: TextStyle(
-                    color: status == 'Concluído' ? Colors.white : Colors.black,
-                  ),
-                  ),
-                ],
                 ),
-              ),
-              // Opção "Pendente"
-              Container(
-                decoration: BoxDecoration(
-                color: status == 'Pendente' ? Colors.purple : Colors.transparent,
-                borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                children: [
-                  Radio<String>(
-                  value: 'Pendente',
-                  groupValue: status,
-                  onChanged: (value) {},
-                  activeColor: Colors.white,
-                  fillColor: MaterialStateProperty.resolveWith<Color>(
-                    (states) => status == 'Pendente' ? Colors.white : Colors.purple,
-                  ),
-                  ),
-                  Text(
-                  'Pendente',
-                  style: TextStyle(
-                    color: status == 'Pendente' ? Colors.white : Colors.black,
-                  ),
-                  ),
-                ],
-                ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
               ],
             ),
           ],
