@@ -1,60 +1,152 @@
 import 'package:flutter/material.dart';
+import 'package:teste_flutter/inicio.dart';
+import 'package:teste_flutter/repositories/auth_repository.dart';
 
+//parte de registrar um usuário
+class RegisterPage extends StatefulWidget {
+  // Nome da classe com UpperCamelCase
+  const RegisterPage({super.key}); // Construtor com const e key
 
-class registerPage extends StatelessWidget{
-  
-  final TextEditingController _emailRegister = TextEditingController();
-  final TextEditingController _passwordRegister = TextEditingController();
-  final TextEditingController _passwordRegister_Confirm = TextEditingController();
-
-  void verifyRegister(BuildContext context){
-
-    String emailRegister = _emailRegister.text;
-    String passwordRegister = _passwordRegister.text;
-    String passwordRegister_Confirm = _passwordRegister_Confirm.text;
-
-
-    if (passwordRegister.length < 2 || emailRegister.length < 8 || passwordRegister_Confirm.length < 2){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha todos os campos!')
-        ),
-      );
-    }
-
-    if (passwordRegister_Confirm != passwordRegister){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('As duas senhas tem que ser iguais!')
-        ),
-      );
-    }
-  }
   @override
-  Widget build(BuildContext context){
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+// Classe State
+class _RegisterPageState extends State<RegisterPage> {
+  // Controllers e outras variáveis de estado
+  final TextEditingController _emailRegisterController =
+      TextEditingController();
+  final TextEditingController _passwordRegisterController =
+      TextEditingController();
+  final TextEditingController _passwordRegisterConfirmController =
+      TextEditingController();
+  final TextEditingController _nomeRegisterController = TextEditingController();
+
+  final AuthRepository _authRepository = AuthRepository();
+  bool _isLoading = false;
+
+  // Método dispose para limpar os controllers
+  @override
+  void dispose() {
+    _emailRegisterController.dispose();
+    _passwordRegisterController.dispose();
+    _passwordRegisterConfirmController.dispose();
+    _nomeRegisterController.dispose();
+    super.dispose();
+  }
+
+  //função de verificação e chamada da API
+  Future<void> verificarRegister() async {
+    String emailRegister = _emailRegisterController.text;
+    String passwordRegister = _passwordRegisterController.text;
+    String passwordRegisterConfirm = _passwordRegisterConfirmController.text;
+    String nomeRegister = _nomeRegisterController.text;
+
+    if (passwordRegister.length < 2 ||
+        emailRegister.length < 8 ||
+        passwordRegisterConfirm.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Preencha todos os campos!')),
+      );
+
+      return;
+    }
+
+    if (passwordRegisterConfirm != passwordRegister) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('As duas senhas devem ser iguais!')),
+      );
+
+      return;
+    }
+
+    // Se passou nas validações locais
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Chama o método do AuthRepository
+    final String? errorMessage = await _authRepository.registerUser(
+      name: nomeRegister,
+      email: emailRegister,
+      password: passwordRegister,
+    );
+
+    // É importante checar 'mounted' novamente após uma operação 'await'
+    if (!mounted) return;
+
+    if (errorMessage == null) {
+      // Sucesso!
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Usuário registrado com sucesso! Por favor, faça o login.',
+          ),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Limpar campos
+      _nomeRegisterController.clear();
+      _emailRegisterController.clear();
+      _passwordRegisterController.clear();
+      _passwordRegisterConfirmController.clear();
+    } else {
+      // Erro! A mensagem de erro veio do AuthRepository
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+      );
+    }
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Cadastro")),
+      appBar: AppBar(title: const Text("Cadastro")), // Adicionado const
       body: Container(
         color: Colors.white,
-        padding: EdgeInsets.only(
+        padding: const EdgeInsets.only(
           top: 60,
           left: 40,
           right: 40,
-        ),
-        //Para o teclado não ficar em cima da foto e dos inputs
+        ), // Adicionado const
         child: ListView(
           children: [
             SizedBox(
               height: 128,
               width: 128,
-              child: Image.asset('assets/Logo.png'),
+              child: Image.asset(
+                'assets/Logo.png',
+              ), // Certifique-se que 'assets/Logo.png' está no pubspec.yaml
             ),
-            SizedBox(
-              height: 40,
-            ),
+            const SizedBox(height: 40), // Adicionado const
             TextFormField(
-              autofocus: true,
-              controller: _emailRegister,
+              // autofocus: true, // Geralmente, evite múltiplos autofocus
+              controller:
+                  _nomeRegisterController, // Usa o controller da classe State
+              keyboardType: TextInputType.name, // Mais apropriado para nome
+              decoration: const InputDecoration(
+                // Adicionado const
+                labelText: "Nome",
+                labelStyle: TextStyle(
+                  color: Colors.black38,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 15,
+                ),
+              ),
+              style: const TextStyle(fontSize: 15), // Adicionado const
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller:
+                  _emailRegisterController, // Usa o controller da classe State
               keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
+                // Adicionado const
                 labelText: "E-mail",
                 labelStyle: TextStyle(
                   color: Colors.black38,
@@ -62,240 +154,246 @@ class registerPage extends StatelessWidget{
                   fontSize: 15,
                 ),
               ),
-              style: TextStyle(fontSize: 15),
+              style: const TextStyle(fontSize: 15), // Adicionado const
             ),
-            SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 16),
             TextFormField(
-              autofocus: true,
               obscureText: true,
-              controller: _passwordRegister,
-              decoration: InputDecoration(
+              controller:
+                  _passwordRegisterController, // Usa o controller da classe State
+              decoration: const InputDecoration(
+                // Adicionado const
                 labelText: "Senha",
                 labelStyle: TextStyle(
                   color: Colors.black38,
                   fontWeight: FontWeight.w400,
                   fontSize: 15,
                 ),
-              ), 
-              style: TextStyle(fontSize: 15),
+              ),
+              style: const TextStyle(fontSize: 15), // Adicionado const
             ),
-            SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 16),
             TextFormField(
-              autofocus: true,
               obscureText: true,
-              controller: _passwordRegister_Confirm,
-              decoration: InputDecoration(
+              controller:
+                  _passwordRegisterConfirmController, // Usa o controller da classe State
+              decoration: const InputDecoration(
+                // Adicionado const
                 labelText: "Confirmar Senha",
                 labelStyle: TextStyle(
                   color: Colors.black38,
                   fontWeight: FontWeight.w400,
                   fontSize: 15,
                 ),
-              ), 
-              style: TextStyle(fontSize: 15),
-            ),
-            SizedBox(
-            height: 40,
-          ),
-          Container(
-            height: 60,
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [0.3,1],
-                colors: [
-                  Color(0xFF7F00FF),
-                  Color(0xFFE100FF),
-                ],
               ),
-              borderRadius: BorderRadius.all( 
-                Radius.circular(5)
-              ),
+              style: const TextStyle(fontSize: 15), // Adicionado const
             ),
-            child: SizedBox.expand(
-              child: TextButton(
-                onPressed: () {
-                  verifyRegister(context);
-                },
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Cadastrar",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: Image.asset("assets/foguete.png"),
-                    ),
-                  ],
+            const SizedBox(height: 40),
+            Container(
+              height: 60,
+              alignment: Alignment.centerLeft,
+              decoration: const BoxDecoration(
+                // Adicionado const
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  stops: [0.3, 1],
+                  colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              child: SizedBox.expand(
+                child: TextButton(
+                  onPressed:
+                      _isLoading
+                          ? null
+                          : verificarRegister, // Chama o método da classe State
+                  child:
+                      _isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                // Adicionado const
+                                "Cadastrar",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                ),
+                                textAlign: TextAlign.left,
+                              ),
+                              SizedBox(
+                                height: 32,
+                                width: 32,
+                                child: Image.asset(
+                                  "assets/foguete.png",
+                                ), // Certifique-se que 'assets/foguete.png' está no pubspec.yaml
+                              ),
+                            ],
+                          ),
                 ),
               ),
             ),
-          ),
-          ],  
+          ],
         ),
       ),
-
     );
   }
 }
 
+//página de login
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
-
 }
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  void verifyLogin(){
+  final AuthRepository _authRepository = AuthRepository();
+  void verifyLogin() async {
     String passwordController = _passwordController.text;
     String emailController = _emailController.text;
 
-    if (passwordController.length < 2 || emailController.length < 8){
+    if (passwordController.length < 2 || emailController.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Preencha todos os campos!')
+        const SnackBar(content: Text('Preencha todos os campos!')),
+      );
+    }
+
+    setState(() {
+    });
+
+    final Map<String, dynamic> result = await _authRepository.loginUser(
+      email: emailController,
+      password: passwordController,
+    );
+
+    if (result['success'] == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const InicioPage()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['error'] ?? 'Erro desconhecido no login.'),
+          backgroundColor: Colors.red,
         ),
       );
     }
+
+    setState(() {
+    });
   }
 
-  void usuallyRegister(){
+  void usuallyRegister() {}
 
-
-  }
-  
   @override
-  void dispose(){
+  void dispose() {
     _passwordController.dispose();
     super.dispose();
   }
-  @override 
-  Widget build(BuildContext context){
+
+  @override
+  Widget build(BuildContext context) {
     // Scaffold permite um appBar, uma barra em cima da aplicação e um body para o app.
     return Scaffold(
       body: Container(
-        padding: EdgeInsets.only(
-          top: 60,
-          left: 40,
-          right: 40,
-        ),
-      color: Colors.white,
-      child: ListView(
-        children: [
-          SizedBox(
-            width: 128,
-            height: 128,
-            child: Image.asset("assets/Logo.png"),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          TextFormField(
-            autofocus: true,
-            keyboardType: TextInputType.emailAddress,
-            controller: _emailController,
-            decoration: InputDecoration(
-              labelText: "E-mail",
-              labelStyle: TextStyle(
-                color: Colors.black38,
-                fontWeight: FontWeight.w400,
-                fontSize: 20,
-              )
+        padding: EdgeInsets.only(top: 60, left: 40, right: 40),
+        color: Colors.white,
+        child: ListView(
+          children: [
+            SizedBox(
+              width: 128,
+              height: 128,
+              child: Image.asset("assets/Logo.png"),
             ),
-            style: TextStyle(fontSize: 20),
-          ),
-          TextFormField(
-            autofocus: true,
-            controller: _passwordController,
-            obscureText: true,
-            decoration: InputDecoration(
-              labelText: "Senha",
-              labelStyle: TextStyle(
-                color: Colors.black38,
-                fontWeight: FontWeight.w400,
-                fontSize: 20,
-              )
-            ),
-            style: TextStyle(fontSize: 20),
-          ),
-          Container(
-            height: 40,
-            alignment: Alignment.centerRight,
-            child: TextButton(
-              child: Text(
-                "Não tem cadastro? Cadastre-se.",
+            SizedBox(height: 10),
+            TextFormField(
+              autofocus: true,
+              keyboardType: TextInputType.emailAddress,
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: "E-mail",
+                labelStyle: TextStyle(
+                  color: Colors.black38,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 20,
+                ),
               ),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => registerPage()),
-                );
-              },
+              style: TextStyle(fontSize: 20),
             ),
-          ),
-          SizedBox(
-            height: 40,
-          ),
-          Container(
-            height: 60,
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                stops: [0.3,1],
-                colors: [
-                  Color(0xFF7F00FF),
-                  Color(0xFFE100FF),
-                ],
+            TextFormField(
+              autofocus: true,
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: "Senha",
+                labelStyle: TextStyle(
+                  color: Colors.black38,
+                  fontWeight: FontWeight.w400,
+                  fontSize: 20,
+                ),
               ),
-              borderRadius: BorderRadius.all( 
-                Radius.circular(5)
-              ),
+              style: TextStyle(fontSize: 20),
             ),
-            child: SizedBox.expand(
+            Container(
+              height: 40,
+              alignment: Alignment.centerRight,
               child: TextButton(
-                onPressed: verifyLogin,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Login",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20,
+                child: Text("Não tem cadastro? Cadastre-se."),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegisterPage()),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 40),
+            Container(
+              height: 60,
+              alignment: Alignment.centerLeft,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  stops: [0.3, 1],
+                  colors: [Color(0xFF7F00FF), Color(0xFFE100FF)],
+                ),
+                borderRadius: BorderRadius.all(Radius.circular(5)),
+              ),
+              child: SizedBox.expand(
+                child: TextButton(
+                  onPressed: verifyLogin,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Login",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(
-                      height: 32,
-                      width: 32,
-                      child: Image.asset("assets/foguete.png"),
-                    ),
-                  ],
+                      SizedBox(
+                        height: 32,
+                        width: 32,
+                        child: Image.asset("assets/foguete.png"),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ]
-      )
+          ],
+        ),
       ),
     );
-
   }
 }

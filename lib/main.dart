@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:teste_flutter/inicio.dart';
 import 'package:teste_flutter/login.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-  
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'AtriaJr App',
       theme: ThemeData(primarySwatch: Colors.deepPurple),
-      home: InicioPage(),
+      home: LoginPage(),
     );
   }
 }
