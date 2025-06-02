@@ -1,4 +1,4 @@
-import '../repositories/tarefa_repository.dart';
+import '../repositories/task_repository.dart';
 
 class TarefaService {
   final TarefaRepository _repository = TarefaRepository();

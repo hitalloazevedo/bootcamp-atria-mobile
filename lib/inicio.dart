@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:teste_flutter/cards/create_task.dart';
 import 'package:teste_flutter/cards/edit_task.dart';
-import 'package:teste_flutter/services/tarefa_service.dart';
+import 'package:teste_flutter/services/task_service.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});

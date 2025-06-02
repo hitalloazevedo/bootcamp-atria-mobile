@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:teste_flutter/services/tarefa_service.dart';
+import 'package:teste_flutter/services/task_service.dart';
 
 class CriadorTarefas extends StatefulWidget {
   final VoidCallback onTaskCreated; // Função para atualizar a tela
