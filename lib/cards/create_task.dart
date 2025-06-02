@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:teste_flutter/services/tarefa_service.dart';
 
-class CriadorTarefas extends StatelessWidget {
-  const CriadorTarefas({super.key});
+class CriadorTarefas extends StatefulWidget {
+  final VoidCallback onTaskCreated; // Função para atualizar a tela
+
+  const CriadorTarefas({super.key, required this.onTaskCreated});
+
+  @override
+  State<CriadorTarefas> createState() => _CriadorTarefasState();
+}
+
+class _CriadorTarefasState extends State<CriadorTarefas> {
+  final TextEditingController nomeController = TextEditingController();
+  final TextEditingController descricaoController = TextEditingController();
+
+  @override
+  void dispose() {
+    nomeController.dispose();
+    descricaoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        
         Align(
           alignment: Alignment.centerLeft,
           child: Text(
@@ -23,96 +40,49 @@ class CriadorTarefas extends StatelessWidget {
             border: Border.all(color: Colors.purple, width: 1),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Nome da Tarefa",
-                    style: TextStyle(color: Colors.purple),
-                  ),
-                  SizedBox(height: 5),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.calendar_month,
-                        size: 28,
-                        color: Colors.purple,
-                      ),
-                      SizedBox(width: 5),
-                      SizedBox(
-                        width: 190,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Digite aqui",
-                            border: UnderlineInputBorder(),
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 30),
-                  Text(
-                    "Descrição da Tarefa",
-                    style: TextStyle(color: Colors.purple),
-                  ),
-                  SizedBox(height: 5),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.description_outlined,
-                        size: 28,
-                        color: Colors.purple,
-                      ),
-                      SizedBox(width: 5),
-                      SizedBox(
-                        width: 190,
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: "Digite aqui",
-                            border: UnderlineInputBorder(),
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 15),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 0,
-                      ),
-                    ),
-                    child: Text(
-                      "CRIAR TAREFA",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
+              TextField(
+                controller: nomeController,
+                decoration: InputDecoration(
+                  labelText: "Nome da Tarefa",
+                  border: UnderlineInputBorder(),
+                ),
               ),
-              SizedBox(width: 2.3),
-              Image.asset(
-                'assets/Logo.png',
-                width: 120,
-                height: 120,
-                fit: BoxFit.cover,
+              SizedBox(height: 15),
+              TextField(
+                controller: descricaoController,
+                decoration: InputDecoration(
+                  labelText: "Descrição da Tarefa",
+                  border: UnderlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 15),
+              ElevatedButton(
+                onPressed: () async {
+                  await TarefaService().criarTarefa(
+                    nomeController.text,
+                    descricaoController.text,
+                  );
+                  widget.onTaskCreated(); // Atualiza a tela principal
+                  nomeController.clear();
+                  descricaoController.clear(); // Limpa os campos após a criação
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+                ),
+                child: Text(
+                  "CRIAR TAREFA",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

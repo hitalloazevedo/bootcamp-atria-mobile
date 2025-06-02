@@ -1,5 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:teste_flutter/cards/create_task.dart';
+import 'package:teste_flutter/cards/edit_task.dart';
+import 'package:teste_flutter/services/tarefa_service.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
@@ -9,27 +13,20 @@ class InicioPage extends StatefulWidget {
 }
 
 class _InicioPageState extends State<InicioPage> {
-  final List<Map<String, dynamic>> _tarefas = [
-    {
-      "nome": "Estudar Flutter",
-      "dataCriacao": "2024-06-01",
-      "descricao":
-          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. ",
-      "status": "Concluído",
-    },
-    {
-      "nome": "Revisar Dart",
-      "dataCriacao": "2024-06-02",
-      "descricao": "Praticar conceitos básicos e avançados de Dart.",
-      "status": "Pendente",
-    },
-    {
-      "nome": "Implementar Login",
-      "dataCriacao": "2024-06-03",
-      "descricao": "Criar tela de login para o app.",
-      "status": "Concluído",
-    },
-  ];
+  List<Map<String, dynamic>> _tarefas = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchTasks(); // Buscar tarefas ao iniciar
+  }
+
+  Future<void> fetchTasks() async {
+    List<Map<String, dynamic>> tarefas = await TarefaService().buscarTarefas();
+    setState(() {
+      _tarefas = tarefas;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +48,7 @@ class _InicioPageState extends State<InicioPage> {
                     ),
                     const SizedBox(height: 20),
                     const Text(
-                      "Olá [NOME USUÁRIO]",
+                      "Olá, [NOME USUÁRIO]",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -67,7 +64,7 @@ class _InicioPageState extends State<InicioPage> {
                       style: TextStyle(color: Colors.grey),
                     ),
                     const SizedBox(height: 40),
-                    CriadorTarefas(),
+                    CriadorTarefas(onTaskCreated: fetchTasks),
                     const SizedBox(height: 20),
                   ],
                 ),
@@ -77,15 +74,28 @@ class _InicioPageState extends State<InicioPage> {
             // Lista de tarefas
             SliverList(
               delegate: SliverChildBuilderDelegate((context, index) {
-                final tarefa = _tarefas[index];
+                if (_tarefas.isEmpty || index >= _tarefas.length) {
+                  print("Erro: Índice inválido ou lista vazia!");
+                  return SizedBox(); // Retorna um widget vazio para evitar o erro
+                }
+
+                final tarefa =
+                    _tarefas[index]; // Agora só acessamos se o índice for válido!
+
                 return _TarefaItem(
+                  id: tarefa['id'], // Adicionando ID da tarefa
                   titulo: tarefa['nome'],
                   descricao: tarefa['descricao'],
                   data: tarefa['dataCriacao'],
                   status: tarefa['status'],
                   onPressed: () {
-                    // Ação ao clicar na tarefa
+                    TarefaService().atualizarTarefa(
+                      tarefa['id'],
+                      tarefa['nome'],
+                      tarefa['descricao'],
+                    );
                   },
+                  tarefa: {},
                 );
               }, childCount: _tarefas.length),
             ),
@@ -108,6 +118,7 @@ class _InicioPageState extends State<InicioPage> {
 }
 
 class _TarefaItem extends StatelessWidget {
+  final Map<String, dynamic> tarefa;
   final String titulo;
   final String descricao;
   final String data;
@@ -115,11 +126,13 @@ class _TarefaItem extends StatelessWidget {
   final VoidCallback onPressed;
 
   const _TarefaItem({
+    required this.tarefa,
     required this.titulo,
     required this.descricao,
     required this.data,
     required this.status,
     required this.onPressed,
+    required id,
   });
 
   @override
@@ -143,7 +156,13 @@ class _TarefaItem extends StatelessWidget {
                   Row(
                     children: [
                       ElevatedButton(
-                        onPressed: onPressed,
+                        onPressed: () {
+                          TarefaService().atualizarTarefa(
+                            tarefa['id'],
+                            tarefa['nome'],
+                            tarefa['descricao'],
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,
                           minimumSize: const Size(32, 32),
