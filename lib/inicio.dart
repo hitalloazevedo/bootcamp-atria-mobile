@@ -3,22 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:teste_flutter/cards/create_task.dart';
 import 'utils/secure_storage.dart';
+import 'package:teste_flutter/login.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
-
+  
+  
   @override
   State<InicioPage> createState() => _InicioPageState();
+  
 }
 
 class _InicioPageState extends State<InicioPage> {
   List<Map<String, dynamic>> _tarefas = [];
 
   @override
+  
   void initState() {
     super.initState();
     fetchTasks(); // Buscar tarefas ao iniciar
   }
+  
 
   Future<void> fetchTasks() async {
     final token = await SecureStorage().getToken();
@@ -64,6 +69,13 @@ class _InicioPageState extends State<InicioPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const LogoutButton(), // Assumindo que LogoutButton está definido
+                      ],
+                    ),
                     Image.asset(
                       'assets/Logo.png',
                       width: 140,
@@ -595,6 +607,37 @@ class _TarefaItem extends StatelessWidget {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: () async {
+        final secureStorage = SecureStorage();
+        await secureStorage.deleteToken();
+
+        if (context.mounted) {
+          // Use pushNamedAndRemoveUntil para limpar a pilha de navegação completamente
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/login', // Certifique-se que esta rota está definida
+            (Route<dynamic> route) => false,
+          );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.asset(
+          'assets/logout.png', // Certifique-se que este asset existe
+          width: 30,
+          height: 30,
         ),
       ),
     );
