@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:teste_flutter/cards/edit_task.dart';
 import 'package:teste_flutter/login.dart';
 import 'package:teste_flutter/inicio.dart';
 

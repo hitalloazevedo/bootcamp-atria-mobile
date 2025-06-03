@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:teste_flutter/inicio.dart';
 import 'package:http/http.dart' as http;
-import 'package:teste_flutter/repositories/auth_repository.dart';
 import 'utils/secure_storage.dart';
 
 //parte de registrar um usuário
@@ -26,7 +25,6 @@ class _RegisterPageState extends State<RegisterPage> {
       TextEditingController();
   final TextEditingController _nomeRegisterController = TextEditingController();
 
-  final AuthRepository _authRepository = AuthRepository();
   bool _isLoading = false;
 
   // Método dispose para limpar os controllers
@@ -269,7 +267,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final AuthRepository _authRepository = AuthRepository();
   void verifyLogin() async {
     String passwordController = _passwordController.text;
     String emailController = _emailController.text;
