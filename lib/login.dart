@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:teste_flutter/inicio.dart';
+import 'package:http/http.dart' as http;
 import 'package:teste_flutter/repositories/auth_repository.dart';
 
 //parte de registrar um usuário
@@ -66,11 +67,22 @@ class _RegisterPageState extends State<RegisterPage> {
     });
 
     // Chama o método do AuthRepository
-    final String? errorMessage = await _authRepository.registerUser(
-      name: nomeRegister,
-      email: emailRegister,
-      password: passwordRegister,
-    );
+    String? errorMessage;
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:3000/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: '{"name": "$nomeRegister", "email": "$emailRegister", "password": "$passwordRegister"}',
+      );
+
+      if (response.statusCode < 300) {
+        errorMessage = null;
+      } else {
+        errorMessage = 'Erro ao registrar usuário: ${response.body}';
+      }
+    } catch (e) {
+      errorMessage = 'Erro de conexão: $e';
+    }
 
     // É importante checar 'mounted' novamente após uma operação 'await'
     if (!mounted) return;
@@ -91,6 +103,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _emailRegisterController.clear();
       _passwordRegisterController.clear();
       _passwordRegisterConfirmController.clear();
+
+      Navigator.pop(context);
     } else {
       // Erro! A mensagem de erro veio do AuthRepository
       ScaffoldMessenger.of(context).showSnackBar(
@@ -266,10 +280,21 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
     });
 
-    final Map<String, dynamic> result = await _authRepository.loginUser(
-      email: emailController,
-      password: passwordController,
+    final response = await http.post(
+      Uri.parse('http://10.0.2.2:3000/auth/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: '{"email": "$emailController", "password": "$passwordController"}',
     );
+
+    Map<String, dynamic> result;
+    if (response.statusCode < 300) {
+      result = {'success': true};
+    } else {
+      result = {
+      'success': false,
+      'error': 'Erro ao fazer login: ${response.body}'
+      };
+    }
 
     if (result['success'] == true) {
       Navigator.push(

@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'AtriaJr App',
       theme: ThemeData(primarySwatch: Colors.deepPurple),
-      home: InicioPage(),
+      home: LoginPage(),
     );
   }
 }
