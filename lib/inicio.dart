@@ -29,17 +29,25 @@ class _InicioPageState extends State<InicioPage> {
     }
     final response = await http.get(
       Uri.parse('http://10.0.2.2:3000/tasks'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {
       final decoded = jsonDecode(response.body);
-      final List<dynamic> tarefas = decoded is List
-          ? decoded
-          : (decoded['tasks'] ?? []);
+      final List<dynamic> tarefas = decoded['data'] ?? [];
       setState(() {
-        _tarefas = tarefas.cast<Map<String, dynamic>>();
+        _tarefas =
+            tarefas
+                .map<Map<String, dynamic>>(
+                  (tarefa) => {
+                    'id': tarefa['id'].toString(),
+                    'nome': tarefa['title'],
+                    'descricao': tarefa['description'],
+                    'dataCriacao':
+                        tarefa['createdAt'] ?? '', // ajuste se necessário
+                    'status': tarefa['status'],
+                  },
+                )
+                .toList();
       });
     } else {
       throw Exception('Falha ao carregar tarefas');
@@ -65,13 +73,6 @@ class _InicioPageState extends State<InicioPage> {
                       fit: BoxFit.cover,
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "Olá, [NOME USUÁRIO]",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
                     const SizedBox(height: 8),
                     const Text(
                       "Vamos colocar a sua rotina em dia.",
@@ -106,13 +107,41 @@ class _InicioPageState extends State<InicioPage> {
                   descricao: tarefa['descricao'],
                   data: tarefa['dataCriacao'],
                   status: tarefa['status'],
-                  onPressed: () {
-                    TarefaService().atualizarTarefa(
-                      tarefa['id'],
-                      tarefa['nome'],
-                      tarefa['descricao'],
+                  onPressed: () {},
+
+                  onTaskUpdated: () async {
+                    final token = await SecureStorage().getToken();
+                    if (token == null) {
+                      throw Exception('Token não encontrado');
+                    }
+                    final response = await http.get(
+                      Uri.parse('http://10.0.2.2:3000/tasks'),
+                      headers: {'Authorization': 'Bearer $token'},
                     );
+                    if (response.statusCode == 200) {
+                      final decoded = jsonDecode(response.body);
+                      final List<dynamic> tarefas = decoded['data'] ?? [];
+                      setState(() {
+                        _tarefas =
+                            tarefas
+                                .map<Map<String, dynamic>>(
+                                  (tarefa) => {
+                                    'id': tarefa['id'].toString(),
+                                    'nome': tarefa['title'],
+                                    'descricao': tarefa['description'],
+                                    'dataCriacao':
+                                        tarefa['createdAt'] ??
+                                        '', // ajuste se necessário
+                                    'status': tarefa['status'],
+                                  },
+                                )
+                                .toList();
+                      });
+                    } else {
+                      throw Exception('Falha ao carregar tarefas');
+                    }
                   },
+
                   tarefa: {},
                 );
               }, childCount: _tarefas.length),
@@ -137,20 +166,23 @@ class _InicioPageState extends State<InicioPage> {
 
 class _TarefaItem extends StatelessWidget {
   final Map<String, dynamic> tarefa;
+  final String id;
   final String titulo;
   final String descricao;
   final String data;
   final String status;
   final VoidCallback onPressed;
+  final VoidCallback onTaskUpdated;
 
   const _TarefaItem({
     required this.tarefa,
     required this.titulo,
+    required this.id,
     required this.descricao,
     required this.data,
     required this.status,
     required this.onPressed,
-    required id,
+    required this.onTaskUpdated,
   });
 
   @override
@@ -169,57 +201,236 @@ class _TarefaItem extends StatelessWidget {
             // Ícone de menu, título e descrição
             Expanded(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                 children: [
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          TarefaService().atualizarTarefa(
-                            tarefa['id'],
-                            tarefa['nome'],
-                            tarefa['descricao'],
+                  ElevatedButton(
+                  onPressed: () {
+                    showDialog(
+                    context: context,
+                    builder: (context) {
+                      String editedNome = titulo;
+                      String editedDescricao = descricao;
+                      String editedStatus = status;
+
+                      return AlertDialog(
+                      title: const Text('Editar Tarefa'),
+                      content: SingleChildScrollView(
+                        child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                          decoration: const InputDecoration(
+                            labelText: 'Nome',
+                          ),
+                          controller: TextEditingController(
+                            text: editedNome,
+                          ),
+                          onChanged:
+                            (value) => editedNome = value,
+                          ),
+                          TextField(
+                          decoration: const InputDecoration(
+                            labelText: 'Descrição',
+                          ),
+                          controller: TextEditingController(
+                            text: editedDescricao,
+                          ),
+                          onChanged:
+                            (value) => editedDescricao = value,
+                          maxLines: 3,
+                          ),
+                          const SizedBox(height: 16),
+                          StatefulBuilder(
+                          builder: (context, setState) {
+                            return Row(
+                            children: [
+                              Radio<String>(
+                              value: 'Concluído',
+                              groupValue: editedStatus,
+                              onChanged: (value) {
+                                setState(() {
+                                editedStatus = value!;
+                                });
+                              },
+                              ),
+                              const Text('Concluído'),
+                              Radio<String>(
+                              value: 'Pendente',
+                              groupValue: editedStatus,
+                              onChanged: (value) {
+                                setState(() {
+                                editedStatus = value!;
+                                });
+                              },
+                              ),
+                              const Text('Pendente'),
+                            ],
+                            );
+                          },
+                          ),
+                        ],
+                        ),
+                      ),
+                      actions: [
+                        // Botão de excluir
+                        ElevatedButton(
+                        onPressed: () async {
+                          final token = await SecureStorage().getToken();
+                          if (token == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Token não encontrado')),
                           );
+                          return;
+                          }
+                          final response = await http.delete(
+                          Uri.parse('http://10.0.2.2:3000/tasks/$id'),
+                          headers: {
+                            'Authorization': 'Bearer $token',
+                          },
+                          );
+                          if (response.statusCode < 300) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Tarefa excluída com sucesso')),
+                          );
+                          onTaskUpdated();
+                          Navigator.of(context).pop();
+                          } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Erro ao excluir tarefa')),
+                          );
+                          }
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.purple,
                           minimumSize: const Size(32, 32),
                           padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8),
                           ),
                         ),
                         child: const Icon(
-                          Icons.menu,
+                          Icons.delete,
                           color: Colors.white,
                           size: 20,
                         ),
-                      ),
-                      Flexible(
-                        child: Text(
-                          titulo.length > 25
-                              ? '${titulo.substring(0, 25)}...'
-                              : titulo,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Text(
-                      descricao.length > 90
-                          ? '${descricao.substring(0, 90)}...'
-                          : descricao,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 5,
+                        TextButton(
+                        onPressed:
+                          () => Navigator.of(context).pop(),
+                        child: const Text('Cancelar'),
+                        ),
+                        ElevatedButton(
+                        onPressed: () async {
+                          // Atualiza a tarefa usando a biblioteca HTTP
+                          final token =
+                            await SecureStorage().getToken();
+                          if (token == null) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            const SnackBar(
+                            content: Text(
+                              'Token não encontrado',
+                            ),
+                            ),
+                          );
+                          return;
+                          }
+                          final response = await http.put(
+                          Uri.parse(
+                            'http://10.0.2.2:3000/tasks/$id',
+                          ),
+                          headers: {
+                            'Authorization': 'Bearer $token',
+                            'Content-Type': 'application/json',
+                          },
+                          body: jsonEncode({
+                            'title': editedNome,
+                            'description': editedDescricao,
+                            'status': editedStatus,
+                          }),
+                          );
+                          if (response.statusCode < 300) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            const SnackBar(
+                            content: Text(
+                              'Tarefa atualizada com sucesso',
+                            ),
+                            ),
+                          );
+                          } else {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(
+                            const SnackBar(
+                            content: Text(
+                              'Erro ao atualizar tarefa',
+                            ),
+                            ),
+                          );
+                          }
+                          Future.delayed(Duration.zero, () {
+                          if (context.mounted) {
+                            context
+                              .findAncestorStateOfType<
+                              _InicioPageState
+                              >()
+                              ?.fetchTasks();
+                          }
+                          });
+                          onTaskUpdated();
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Salvar'),
+                        ),
+                      ],
+                      );
+                    },
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    minimumSize: const Size(32, 32),
+                    padding: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                     ),
                   ),
+                  child: const Icon(
+                    Icons.menu,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  ),
+                  Flexible(
+                  child: Text(
+                    titulo.length > 25
+                      ? '${titulo.substring(0, 25)}...'
+                      : titulo,
+                    style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  ),
                 ],
+                ),
+                Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Text(
+                  descricao.length > 90
+                    ? '${descricao.substring(0, 90)}...'
+                    : descricao,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 5,
+                ),
+                ),
+              ],
               ),
             ),
             // Barra vertical separadora
@@ -235,73 +446,151 @@ class _TarefaItem extends StatelessWidget {
                 SizedBox(height: 4),
 
                 // Opção "Concluído"
-                Container(
-                  decoration: BoxDecoration(
-                    color:
-                        status == 'Concluído'
-                            ? Colors.purple
-                            : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Radio<String>(
-                        value: 'Concluído',
-                        groupValue: status,
-                        onChanged: (value) {},
-                        activeColor: Colors.white,
-                        fillColor: MaterialStateProperty.resolveWith<Color>(
-                          (states) =>
-                              status == 'Concluído'
-                                  ? Colors.white
-                                  : Colors.purple,
+                GestureDetector(
+                  onTap: () async {
+                    if (status != 'Concluído') {
+                      final token = await SecureStorage().getToken();
+                      if (token == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Token não encontrado')),
+                        );
+                        return;
+                      }
+                      final response = await http.put(
+                        Uri.parse('http://10.0.2.2:3000/tasks/$id'),
+                        headers: {
+                          'Authorization': 'Bearer $token',
+                          'Content-Type': 'application/json',
+                        },
+                        body: jsonEncode({
+                          'title': titulo,
+                          'description': descricao,
+                          'status': 'Concluído',
+                        }),
+                      );
+                      if (response.statusCode < 300) {
+                        onTaskUpdated();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tarefa marcada como concluída'),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Erro ao atualizar tarefa'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color:
+                          status == 'Concluído'
+                              ? Colors.purple
+                              : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: 'Concluído',
+                          groupValue: status,
+                          onChanged: (_) {},
+                          activeColor: Colors.white,
+                          fillColor: MaterialStateProperty.resolveWith<Color>(
+                            (states) =>
+                                status == 'Concluído'
+                                    ? Colors.white
+                                    : Colors.purple,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Concluído',
-                        style: TextStyle(
-                          color:
-                              status == 'Concluído'
-                                  ? Colors.white
-                                  : Colors.black,
+                        Text(
+                          'Concluído',
+                          style: TextStyle(
+                            color:
+                                status == 'Concluído'
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 // Opção "Pendente"
-                Container(
-                  decoration: BoxDecoration(
-                    color:
-                        status == 'Pendente'
-                            ? Colors.purple
-                            : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Radio<String>(
-                        value: 'Pendente',
-                        groupValue: status,
-                        onChanged: (value) {},
-                        activeColor: Colors.white,
-                        fillColor: MaterialStateProperty.resolveWith<Color>(
-                          (states) =>
-                              status == 'Pendente'
-                                  ? Colors.white
-                                  : Colors.purple,
+                GestureDetector(
+                  onTap: () async {
+                    if (status != 'Pendente') {
+                      final token = await SecureStorage().getToken();
+                      if (token == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Token não encontrado')),
+                        );
+                        return;
+                      }
+                      final response = await http.put(
+                        Uri.parse('http://10.0.2.2:3000/tasks/$id'),
+                        headers: {
+                          'Authorization': 'Bearer $token',
+                          'Content-Type': 'application/json',
+                        },
+                        body: jsonEncode({
+                          'title': titulo,
+                          'description': descricao,
+                          'status': 'Pendente',
+                        }),
+                      );
+                      if (response.statusCode < 300) {
+                        onTaskUpdated();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Tarefa marcada como pendente'),
+                          ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Erro ao atualizar tarefa'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color:
+                          status == 'Pendente'
+                              ? Colors.purple
+                              : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: 'Pendente',
+                          groupValue: status,
+                          onChanged: (_) {},
+                          activeColor: Colors.white,
+                          fillColor: MaterialStateProperty.resolveWith<Color>(
+                            (states) =>
+                                status == 'Pendente'
+                                    ? Colors.white
+                                    : Colors.purple,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Pendente',
-                        style: TextStyle(
-                          color:
-                              status == 'Pendente'
-                                  ? Colors.white
-                                  : Colors.black,
+                        Text(
+                          'Pendente',
+                          style: TextStyle(
+                            color:
+                                status == 'Pendente'
+                                    ? Colors.white
+                                    : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),

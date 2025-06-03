@@ -103,7 +103,7 @@ class _CriadorTarefasState extends State<CriadorTarefas> {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: '{"title": "$nome", "description": "$descricao", "status": "pendente"}',
+      body: '{"title": "$nome", "description": "$descricao", "status": "Pendente"}',
       );
 
       if (response.statusCode > 300) {
