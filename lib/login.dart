@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:teste_flutter/inicio.dart';
 import 'package:http/http.dart' as http;
 import 'package:teste_flutter/repositories/auth_repository.dart';
+import 'utils/secure_storage.dart';
 
 //parte de registrar um usuário
 class RegisterPage extends StatefulWidget {
@@ -297,6 +300,13 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     if (result['success'] == true) {
+      // Extrai o token da resposta e salva usando SecureStorage
+      final Map<String, dynamic> responseBody = response.body.isNotEmpty ? Map<String, dynamic>.from(jsonDecode(response.body)) : {};
+      final String? token = responseBody['token'];
+      if (token != null) {
+        final secureStorage = SecureStorage();
+        await secureStorage.saveToken(token);
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const InicioPage()),

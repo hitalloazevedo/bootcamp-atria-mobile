@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:teste_flutter/services/task_service.dart';
+import '../utils/secure_storage.dart';
+import 'package:http/http.dart';
 
 class CriadorTarefas extends StatefulWidget {
   final VoidCallback onTaskCreated; // Função para atualizar a tela
@@ -60,7 +62,7 @@ class _CriadorTarefasState extends State<CriadorTarefas> {
               SizedBox(height: 15),
               ElevatedButton(
                 onPressed: () async {
-                  await TarefaService().criarTarefa(
+                  await criarTarefaHttp(
                     nomeController.text,
                     descricaoController.text,
                   );
@@ -89,5 +91,33 @@ class _CriadorTarefasState extends State<CriadorTarefas> {
         ),
       ],
     );
+  }
+
+  Future<void> criarTarefaHttp(String nome, String descricao) async {
+    try {
+      final storage = SecureStorage();
+      final token = await storage.getToken();
+      final response = await post(
+      Uri.parse('http://10.0.2.2:3000/tasks'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: '{"title": "$nome", "description": "$descricao", "status": "pendente"}',
+      );
+
+      if (response.statusCode > 300) {
+      throw Exception('Erro ao criar tarefa: ${response.body}');
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Tarefa criada com sucesso!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      // Você pode mostrar um snackbar ou logar o erro
+      debugPrint('Erro ao criar tarefa: $e');
+    }
   }
 }

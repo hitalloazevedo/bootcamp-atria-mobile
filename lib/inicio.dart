@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:teste_flutter/cards/create_task.dart';
 import 'package:teste_flutter/cards/edit_task.dart';
 import 'package:teste_flutter/services/task_service.dart';
+import 'utils/secure_storage.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
@@ -22,10 +23,27 @@ class _InicioPageState extends State<InicioPage> {
   }
 
   Future<void> fetchTasks() async {
-    List<Map<String, dynamic>> tarefas = await TarefaService().buscarTarefas();
-    setState(() {
-      _tarefas = tarefas;
-    });
+    final token = await SecureStorage().getToken();
+    if (token == null) {
+      throw Exception('Token não encontrado');
+    }
+    final response = await http.get(
+      Uri.parse('http://10.0.2.2:3000/tasks'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final List<dynamic> tarefas = decoded is List
+          ? decoded
+          : (decoded['tasks'] ?? []);
+      setState(() {
+        _tarefas = tarefas.cast<Map<String, dynamic>>();
+      });
+    } else {
+      throw Exception('Falha ao carregar tarefas');
+    }
   }
 
   @override
