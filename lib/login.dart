@@ -73,7 +73,8 @@ class _RegisterPageState extends State<RegisterPage> {
       final response = await http.post(
         Uri.parse('http://10.0.2.2:3000/auth/register'),
         headers: {'Content-Type': 'application/json'},
-        body: '{"name": "$nomeRegister", "email": "$emailRegister", "password": "$passwordRegister"}',
+        body:
+            '{"name": "$nomeRegister", "email": "$emailRegister", "password": "$passwordRegister"}',
       );
 
       if (response.statusCode < 300) {
@@ -227,7 +228,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       _isLoading
                           ? const CircularProgressIndicator(color: Colors.white)
                           : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
                                 // Adicionado const
@@ -237,14 +238,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                   color: Colors.white,
                                   fontSize: 20,
                                 ),
-                                textAlign: TextAlign.left,
-                              ),
-                              SizedBox(
-                                height: 32,
-                                width: 32,
-                                child: Image.asset(
-                                  "assets/foguete.png",
-                                ), // Certifique-se que 'assets/foguete.png' está no pubspec.yaml
                               ),
                             ],
                           ),
@@ -277,8 +270,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
 
-    setState(() {
-    });
+    setState(() {});
 
     final response = await http.post(
       Uri.parse('http://10.0.2.2:3000/auth/login'),
@@ -291,14 +283,17 @@ class _LoginPageState extends State<LoginPage> {
       result = {'success': true};
     } else {
       result = {
-      'success': false,
-      'error': 'Erro ao fazer login: ${response.body}'
+        'success': false,
+        'error': 'Erro ao fazer login: ${response.body}',
       };
     }
 
     if (result['success'] == true) {
       // Extrai o token da resposta e salva usando SecureStorage
-      final Map<String, dynamic> responseBody = response.body.isNotEmpty ? Map<String, dynamic>.from(jsonDecode(response.body)) : {};
+      final Map<String, dynamic> responseBody =
+          response.body.isNotEmpty
+              ? Map<String, dynamic>.from(jsonDecode(response.body))
+              : {};
       final String? token = responseBody['token'];
       if (token != null) {
         final secureStorage = SecureStorage();
@@ -317,8 +312,7 @@ class _LoginPageState extends State<LoginPage> {
       );
     }
 
-    setState(() {
-    });
+    setState(() {});
   }
 
   void usuallyRegister() {}
@@ -402,7 +396,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: TextButton(
                   onPressed: verifyLogin,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         "Login",
@@ -412,11 +406,6 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 20,
                         ),
                         textAlign: TextAlign.left,
-                      ),
-                      SizedBox(
-                        height: 32,
-                        width: 32,
-                        child: Image.asset("assets/foguete.png"),
                       ),
                     ],
                   ),

@@ -43,19 +43,37 @@ class _CriadorTarefasState extends State<CriadorTarefas> {
           ),
           child: Column(
             children: [
-              TextField(
-                controller: nomeController,
-                decoration: InputDecoration(
-                  labelText: "Nome da Tarefa",
-                  border: UnderlineInputBorder(),
+              Image.asset(
+                "assets/Logo.png",
+                width: MediaQuery.of(context).size.width / 4,
+              ),
+              ListTile(
+                leading: Icon(Icons.calendar_month, color: Color(0xff85269D)),
+                title: TextField(
+                  controller: nomeController,
+                  decoration: InputDecoration(
+                    labelText: "Nome da Tarefa",
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xff85269D)),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 15),
-              TextField(
-                controller: descricaoController,
-                decoration: InputDecoration(
-                  labelText: "Descrição da Tarefa",
-                  border: UnderlineInputBorder(),
+              ListTile(
+                leading: Icon(
+                  Icons.description_outlined,
+                  color: Color(0xff85269D),
+                ),
+                title: TextField(
+                  controller: descricaoController,
+                  decoration: InputDecoration(
+                    labelText: "Descrição da Tarefa",
+
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xff85269D)),
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: 15),
@@ -97,16 +115,17 @@ class _CriadorTarefasState extends State<CriadorTarefas> {
       final storage = SecureStorage();
       final token = await storage.getToken();
       final response = await post(
-      Uri.parse('http://10.0.2.2:3000/tasks'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: '{"title": "$nome", "description": "$descricao", "status": "Pendente"}',
+        Uri.parse('http://10.0.2.2:3000/tasks'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body:
+            '{"title": "$nome", "description": "$descricao", "status": "Pendente"}',
       );
 
       if (response.statusCode > 300) {
-      throw Exception('Erro ao criar tarefa: ${response.body}');
+        throw Exception('Erro ao criar tarefa: ${response.body}');
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

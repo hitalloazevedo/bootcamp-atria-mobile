@@ -1,29 +1,26 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_floating_bottom_bar/flutter_floating_bottom_bar.dart';
 import 'package:http/http.dart' as http;
-import 'package:teste_flutter/cards/create_task.dart';
+import 'package:teste_flutter/components/create_task.dart';
 import 'utils/secure_storage.dart';
 import 'package:teste_flutter/login.dart';
 
 class InicioPage extends StatefulWidget {
   const InicioPage({super.key});
-  
-  
+
   @override
   State<InicioPage> createState() => _InicioPageState();
-  
 }
 
 class _InicioPageState extends State<InicioPage> {
   List<Map<String, dynamic>> _tarefas = [];
 
   @override
-  
   void initState() {
     super.initState();
     fetchTasks(); // Buscar tarefas ao iniciar
   }
-  
 
   Future<void> fetchTasks() async {
     final token = await SecureStorage().getToken();
@@ -60,6 +57,7 @@ class _InicioPageState extends State<InicioPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -69,13 +67,6 @@ class _InicioPageState extends State<InicioPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const LogoutButton(), // Assumindo que LogoutButton está definido
-                      ],
-                    ),
                     Image.asset(
                       'assets/Logo.png',
                       width: 140,
@@ -86,11 +77,11 @@ class _InicioPageState extends State<InicioPage> {
                     const SizedBox(height: 8),
                     const Text(
                       "Vamos colocar a sua rotina em dia.",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Colors.black, fontSize: 15),
                     ),
                     const Text(
                       "Alguma tarefa nova?",
-                      style: TextStyle(color: Colors.grey),
+                      style: TextStyle(color: Colors.black, fontSize: 15),
                     ),
                     const SizedBox(height: 40),
                     CriadorTarefas(onTaskCreated: fetchTasks),
@@ -159,6 +150,34 @@ class _InicioPageState extends State<InicioPage> {
           ],
         ),
       ),
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Color(0xff85269D),
+
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(60)),
+        child: Icon(Icons.add, color: Colors.white, size: 30),
+      ),
+
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.purple, width: 2.0)),
+        ),
+        child: BottomAppBar(
+          shape: CircularNotchedRectangle(),
+          color: Colors.white,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+            children: [
+              Icon(Icons.house, color: Color(0xff85269D), size: 30),
+              LogoutButton(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -198,7 +217,7 @@ class _TarefaItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: Colors.purple, width: 1),
@@ -211,236 +230,263 @@ class _TarefaItem extends StatelessWidget {
             // Ícone de menu, título e descrição
             Expanded(
               child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                  onPressed: () {
-                    showDialog(
-                    context: context,
-                    builder: (context) {
-                      String editedNome = titulo;
-                      String editedDescricao = descricao;
-                      String editedStatus = status;
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            titulo.length > 25
+                                ? '${titulo.substring(0, 25)}...'
+                                : titulo,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                String editedNome = titulo;
+                                String editedDescricao = descricao;
+                                String editedStatus = status;
 
-                      return AlertDialog(
-                      title: const Text('Editar Tarefa'),
-                      content: SingleChildScrollView(
-                        child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Nome',
-                          ),
-                          controller: TextEditingController(
-                            text: editedNome,
-                          ),
-                          onChanged:
-                            (value) => editedNome = value,
-                          ),
-                          TextField(
-                          decoration: const InputDecoration(
-                            labelText: 'Descrição',
-                          ),
-                          controller: TextEditingController(
-                            text: editedDescricao,
-                          ),
-                          onChanged:
-                            (value) => editedDescricao = value,
-                          maxLines: 3,
-                          ),
-                          const SizedBox(height: 16),
-                          StatefulBuilder(
-                          builder: (context, setState) {
-                            return Row(
-                            children: [
-                              Radio<String>(
-                              value: 'Concluído',
-                              groupValue: editedStatus,
-                              onChanged: (value) {
-                                setState(() {
-                                editedStatus = value!;
-                                });
+                                return AlertDialog(
+                                  title: const Text('Editar Tarefa'),
+                                  content: SingleChildScrollView(
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Nome',
+                                          ),
+                                          controller: TextEditingController(
+                                            text: editedNome,
+                                          ),
+                                          onChanged:
+                                              (value) => editedNome = value,
+                                        ),
+                                        TextField(
+                                          decoration: const InputDecoration(
+                                            labelText: 'Descrição',
+                                          ),
+                                          controller: TextEditingController(
+                                            text: editedDescricao,
+                                          ),
+                                          onChanged:
+                                              (value) =>
+                                                  editedDescricao = value,
+                                          maxLines: 3,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        StatefulBuilder(
+                                          builder: (context, setState) {
+                                            return Row(
+                                              children: [
+                                                Radio<String>(
+                                                  value: 'Concluído',
+                                                  groupValue: editedStatus,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      editedStatus = value!;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Concluído'),
+                                                Radio<String>(
+                                                  value: 'Pendente',
+                                                  groupValue: editedStatus,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      editedStatus = value!;
+                                                    });
+                                                  },
+                                                ),
+                                                const Text('Pendente'),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  actions: [
+                                    // Botão de excluir
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        final token =
+                                            await SecureStorage().getToken();
+                                        if (token == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Token não encontrado',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        final response = await http.delete(
+                                          Uri.parse(
+                                            'http://10.0.2.2:3000/tasks/$id',
+                                          ),
+                                          headers: {
+                                            'Authorization': 'Bearer $token',
+                                          },
+                                        );
+                                        if (response.statusCode < 300) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Tarefa excluída com sucesso',
+                                              ),
+                                            ),
+                                          );
+                                          onTaskUpdated();
+                                          Navigator.of(context).pop();
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Erro ao excluir tarefa',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.purple,
+                                        minimumSize: const Size(32, 32),
+                                        padding: EdgeInsets.zero,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed:
+                                          () => Navigator.of(context).pop(),
+                                      child: const Text('Cancelar'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        // Atualiza a tarefa usando a biblioteca HTTP
+                                        final token =
+                                            await SecureStorage().getToken();
+                                        if (token == null) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Token não encontrado',
+                                              ),
+                                            ),
+                                          );
+                                          return;
+                                        }
+                                        final response = await http.put(
+                                          Uri.parse(
+                                            'http://10.0.2.2:3000/tasks/$id',
+                                          ),
+                                          headers: {
+                                            'Authorization': 'Bearer $token',
+                                            'Content-Type': 'application/json',
+                                          },
+                                          body: jsonEncode({
+                                            'title': editedNome,
+                                            'description': editedDescricao,
+                                            'status': editedStatus,
+                                          }),
+                                        );
+                                        if (response.statusCode < 300) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Tarefa atualizada com sucesso',
+                                              ),
+                                            ),
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Erro ao atualizar tarefa',
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        Future.delayed(Duration.zero, () {
+                                          if (context.mounted) {
+                                            context
+                                                .findAncestorStateOfType<
+                                                  _InicioPageState
+                                                >()
+                                                ?.fetchTasks();
+                                          }
+                                        });
+                                        onTaskUpdated();
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text('Salvar'),
+                                    ),
+                                  ],
+                                );
                               },
-                              ),
-                              const Text('Concluído'),
-                              Radio<String>(
-                              value: 'Pendente',
-                              groupValue: editedStatus,
-                              onChanged: (value) {
-                                setState(() {
-                                editedStatus = value!;
-                                });
-                              },
-                              ),
-                              const Text('Pendente'),
-                            ],
                             );
                           },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(32, 32),
+                            padding: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              side: BorderSide(color: Color(0xff85269D)),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
-                        ],
-                        ),
-                      ),
-                      actions: [
-                        // Botão de excluir
-                        ElevatedButton(
-                        onPressed: () async {
-                          final token = await SecureStorage().getToken();
-                          if (token == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Token não encontrado')),
-                          );
-                          return;
-                          }
-                          final response = await http.delete(
-                          Uri.parse('http://10.0.2.2:3000/tasks/$id'),
-                          headers: {
-                            'Authorization': 'Bearer $token',
-                          },
-                          );
-                          if (response.statusCode < 300) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Tarefa excluída com sucesso')),
-                          );
-                          onTaskUpdated();
-                          Navigator.of(context).pop();
-                          } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Erro ao excluir tarefa')),
-                          );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          minimumSize: const Size(32, 32),
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          child: const Icon(
+                            Icons.menu,
+                            color: Color(0xff85269D),
+                            size: 20,
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        ),
-                        TextButton(
-                        onPressed:
-                          () => Navigator.of(context).pop(),
-                        child: const Text('Cancelar'),
-                        ),
-                        ElevatedButton(
-                        onPressed: () async {
-                          // Atualiza a tarefa usando a biblioteca HTTP
-                          final token =
-                            await SecureStorage().getToken();
-                          if (token == null) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            const SnackBar(
-                            content: Text(
-                              'Token não encontrado',
-                            ),
-                            ),
-                          );
-                          return;
-                          }
-                          final response = await http.put(
-                          Uri.parse(
-                            'http://10.0.2.2:3000/tasks/$id',
-                          ),
-                          headers: {
-                            'Authorization': 'Bearer $token',
-                            'Content-Type': 'application/json',
-                          },
-                          body: jsonEncode({
-                            'title': editedNome,
-                            'description': editedDescricao,
-                            'status': editedStatus,
-                          }),
-                          );
-                          if (response.statusCode < 300) {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            const SnackBar(
-                            content: Text(
-                              'Tarefa atualizada com sucesso',
-                            ),
-                            ),
-                          );
-                          } else {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
-                            const SnackBar(
-                            content: Text(
-                              'Erro ao atualizar tarefa',
-                            ),
-                            ),
-                          );
-                          }
-                          Future.delayed(Duration.zero, () {
-                          if (context.mounted) {
-                            context
-                              .findAncestorStateOfType<
-                              _InicioPageState
-                              >()
-                              ?.fetchTasks();
-                          }
-                          });
-                          onTaskUpdated();
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Salvar'),
                         ),
                       ],
-                      );
-                    },
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    minimumSize: const Size(32, 32),
-                    padding: EdgeInsets.zero,
-                    shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Icon(
-                    Icons.menu,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  ),
-                  Flexible(
-                  child: Text(
-                    titulo.length > 25
-                      ? '${titulo.substring(0, 25)}...'
-                      : titulo,
-                    style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Text(
+                      descricao.length > 90
+                          ? '${descricao.substring(0, 90)}...'
+                          : descricao,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 5,
                     ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
                   ),
                 ],
-                ),
-                Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text(
-                  descricao.length > 90
-                    ? '${descricao.substring(0, 90)}...'
-                    : descricao,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 5,
-                ),
-                ),
-              ],
               ),
             ),
             // Barra vertical separadora
@@ -495,6 +541,7 @@ class _TarefaItem extends StatelessWidget {
                     }
                   },
                   child: Container(
+                    padding: EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color:
                           status == 'Concluído'
@@ -569,6 +616,7 @@ class _TarefaItem extends StatelessWidget {
                     }
                   },
                   child: Container(
+                    padding: EdgeInsets.only(right: 10),
                     decoration: BoxDecoration(
                       color:
                           status == 'Pendente'
@@ -620,25 +668,23 @@ class LogoutButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(20),
-      onTap: () async {
-        final secureStorage = SecureStorage();
-        await secureStorage.deleteToken();
 
-        if (context.mounted) {
-          // Use pushNamedAndRemoveUntil para limpar a pilha de navegação completamente
-          Navigator.of(context).pushNamedAndRemoveUntil(
-            '/login', // Certifique-se que esta rota está definida
-            (Route<dynamic> route) => false,
-          );
-        }
-      },
-      child: Padding(
+      child: IconButton(
+        icon: Icon(Icons.logout, size: 30, color: Color(0xff85269D)),
+
         padding: const EdgeInsets.all(8.0),
-        child: Image.asset(
-          'assets/logout.png', // Certifique-se que este asset existe
-          width: 30,
-          height: 30,
-        ),
+        onPressed: () async {
+          final secureStorage = SecureStorage();
+          await secureStorage.deleteToken();
+
+          if (context.mounted) {
+            // Use pushNamedAndRemoveUntil para limpar a pilha de navegação completamente
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              '/login', // Certifique-se que esta rota está definida
+              (Route<dynamic> route) => false,
+            );
+          }
+        },
       ),
     );
   }
